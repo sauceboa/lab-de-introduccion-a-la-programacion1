@@ -1,8 +1,8 @@
 
-Al definir `def __init__(self, numero_decimal):`, mi objetivo fue asegurar la integridad de los datos desde el inicio. Utilicé `isinstance()` para verificar que el valor que puse sea un entero, evitando errores de ejecución si se intenta procesar un texto o un flotante.
+Al definir `def __init__(self, numero_decimal):`, mi objetivo fue asegurar la integridad de los datos desde el inicio. Utilicé `isinstance()` para verificar que el valor que puse sea un entero, evitando errores de ejecxución si se intenta procesar un texto o un flotante.
 
 (`_convertir_a_base`)
-En lugar de escribir algoritmos separados, identifiqué que la conversión a binario (base 2), octal (base 8) y hexadecimal (base 16) sigue el mismo patrón matemático: **divisiones sucesivas**.
+en vez de  de escribir algoritmos separados, identifiqué que la conversión a binario (base 2), octal (base 8) y hexadecimal (base 16) sigue el mismo patrón matemático: **divisiones sucesivas**.
 
 * **El Bucle `while`**: El programa divide el número decimal entre la base elegida hasta que el cociente llega a cero.
 * **Residuos y Cocientes**: Utilicé el operador `%` para obtener el residuo (que es el dígito en la nueva base) y el operador `//` para actualizar el número para la siguiente iteración.
