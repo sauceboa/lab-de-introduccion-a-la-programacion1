@@ -44,10 +44,17 @@ El flujo lógico implementado en `AccesoUsuario.py` es el siguiente:
 
 ---
 
-## 🚀 CODIGO DE PYTHON
 
-3. Ejecuta el comando:
-   ```intentos = 3
+## Sistema de Acceso de Usuario 🚀
+
+Este script de Python gestiona el inicio de sesión de un administrador mediante validaciones de seguridad y un sistema de intentos limitados.
+
+---
+
+## Código Fuente
+
+```python
+intentos = 3
 
 while intentos > 0:
     print(f"INICIO DE SESIÓN (INTENTOS RESTANTES: {intentos})")
@@ -80,4 +87,4 @@ while intentos > 0:
     else:
         intentos -= 1
 if intentos == 0:
-    print("Acceso bloqueado. Has agotado tus 3 intentos.")```
+    print("Acceso bloqueado. Has agotado tus 3 intentos.")
