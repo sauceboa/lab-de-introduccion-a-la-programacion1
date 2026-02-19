@@ -80,4 +80,4 @@ while intentos > 0:
     else:
         intentos -= 1
 if intentos == 0:
-    print("Acceso bloqueado. Has agotado tus 3 intentos.")
+    print("Acceso bloqueado. Has agotado tus 3 intentos.")```
