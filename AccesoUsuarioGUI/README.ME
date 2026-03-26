@@ -1,1 +1,255 @@
+import streamlit as st
 
+# ==========================================
+# CONFIGURACIÓN DE PÁGINA Y CSS (CARDS)
+# ==========================================
+st.set_page_config(page_title="Dashboard Admin", layout="centered")
+
+# CSS inyectado para las Cards inspirado en Uiverse
+st.markdown("""
+<style>
+    .card-container {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 15px;
+    }
+    .card {
+        width: 100%;
+        max-width: 300px;
+        height: 200px;
+        background: #1e1e1e;
+        border-radius: 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        transition: 0.2s ease-in-out;
+        box-shadow: 0px 10px 15px rgba(0,0,0,0.1);
+        padding: 20px;
+        text-align: center;
+        border: 1px solid #333;
+    }
+    .card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0px 20px 25px rgba(0,0,0,0.3);
+        border: 1px solid #fbc02d;
+    }
+    .card h3 {
+        margin: 0;
+        font-size: 1.2rem;
+        color: #fbc02d;
+    }
+    .card p {
+        font-size: 0.9rem;
+        color: #aaa;
+        margin-top: 10px;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+# ==========================================
+# MANEJO DE ESTADO (SESSION STATE)
+# ==========================================
+if 'logged_in' not in st.session_state:
+    st.session_state.logged_in = False
+if 'intentos' not in st.session_state:
+    st.session_state.intentos = 3
+if 'pagina_actual' not in st.session_state:
+    st.session_state.pagina_actual = "menu"
+if 'usuario' not in st.session_state:
+    st.session_state.usuario = ""
+
+# ==========================================
+# LÓGICA DE NEGOCIO Y VALIDACIÓN
+# ==========================================
+def validar_acceso(usuario, password):
+    es_alfanumerico = usuario.isalnum()
+    es_admin = usuario == "Admin"
+    masde8 = len(password) >= 8
+    tiene_numero = any(c.isdigit() for c in password)
+    tiene_letra = any(c.isalpha() for c in password)
+    clave_correcta = password == "Admin2026"
+
+    match (es_alfanumerico, es_admin, masde8, tiene_numero, tiene_letra, clave_correcta):
+        case (False, _, _, _, _, _): return False, "El usuario no puede estar vacío ni tener símbolos."
+        case (_, False, _, _, _, _): return False, "Usuario incorrecto."
+        case (_, _, False, _, _, _): return False, "La contraseña debe tener al menos 8 caracteres."
+        case (_, _, _, False, _, _) | (_, _, _, _, False, _): return False, "La contraseña debe tener letra y número."
+        case (_, _, _, _, _, False): return False, "Contraseña incorrecta."
+        case (True, True, True, True, True, True): return True, f"¡ACCESO EXITOSO! BIENVENIDO, {usuario.upper()}."
+
+# ==========================================
+# VISTAS DE LAS HERRAMIENTAS
+# ==========================================
+def vista_clasificar_numero():
+    st.title("🔢 Clasificador de Números")
+    num = st.number_input("Ingrese un número entero:", step=1, value=0)
+    
+    if st.button("Clasificar"):
+        # Clasificación por signo
+        match num:
+            case n if n > 0: st.success(f"El número {n} es **positivo**.")
+            case n if n < 0: st.error(f"El número {n} es **negativo**.")
+            case _: st.info("El número es **cero**.")
+        
+        # Clasificación par/impar
+        match num % 2:
+            case 0: st.info(f"Además, el número {num} es **par**.")
+            case _: st.warning(f"Además, el número {num} es **impar**.")
+    
+    if st.button("⬅ Volver al Menú"):
+        st.session_state.pagina_actual = "menu"
+        st.rerun()
+
+def vista_categoria_edad():
+    st.title("👤 Categoría de Edad")
+    edad = st.number_input("Ingrese la edad:", min_value=0, step=1, value=18)
+    
+    match edad:
+        case e if e <= 12: 
+            st.info(f"Con {e} años, eres un **niño**.")
+        case e if e <= 17: 
+            st.info(f"Con {e} años, eres un **adolescente**.")
+        case e if e <= 64:
+            st.success(f"Con {e} años, eres un **adulto**.")
+            id_oficial = st.radio("¿Cuentas con identificación oficial?", ["Sí", "No"], horizontal=True)
+            match id_oficial:
+                case "Sí": st.success("🚗 Puedes conducir un vehículo.")
+                case "No": st.error("🚫 No puedes conducir sin identificación.")
+        case _: 
+            st.info(f"Con {edad} años, eres un **adulto mayor**.")
+
+    if st.button("⬅ Volver al Menú"):
+        st.session_state.pagina_actual = "menu"
+        st.rerun()
+
+def vista_calcular_tarifa():
+    st.title("💲 Calculadora de Tarifa")
+    precio_base = 100.0
+    
+    dia = st.slider("Ingrese día de la semana (1 = Lunes, 7 = Domingo):", 1, 7, 1)
+    estudiante = st.checkbox("¿Eres estudiante? (-15%)")
+    miembro = st.checkbox("¿Eres miembro? (-10%)")
+    
+    if st.button("Calcular Total"):
+        total = precio_base
+        detalles = [f"Precio base: ${precio_base}"]
+        
+        match dia:
+            case d if d in [6, 7]:
+                total += 20
+                detalles.append("+ Recargo de fin de semana ($20)")
+            case _:
+                pass # Días de semana sin recargo
+        
+        if estudiante:
+            total *= 0.85
+            detalles.append("- Descuento estudiante (15%)")
+        if miembro:
+            total *= 0.90
+            detalles.append("- Descuento miembro (10%)")
+            
+        st.write("### Desglose:")
+        for detalle in detalles:
+            st.write(detalle)
+        st.success(f"**Tarifa final: ${total:.2f}**")
+
+    if st.button("⬅ Volver al Menú"):
+        st.session_state.pagina_actual = "menu"
+        st.rerun()
+
+# ==========================================
+# RUTEO Y PANTALLAS PRINCIPALES
+# ==========================================
+
+# Pantalla de Login
+if not st.session_state.logged_in:
+    st.title("🔒 Inicio de Sesión")
+    
+    if st.session_state.intentos > 0:
+        st.write(f"Intentos restantes: **{st.session_state.intentos}**")
+        with st.form("login_form"):
+            usuario = st.text_input("Usuario (Ej: Admin)")
+            password = st.text_input("Contraseña (Ej: Admin2026)", type="password")
+            submit = st.form_submit_button("Ingresar")
+            
+            if submit:
+                exito, mensaje = validar_acceso(usuario, password)
+                if exito:
+                    st.session_state.logged_in = True
+                    st.session_state.usuario = usuario
+                    st.success(mensaje)
+                    st.rerun()
+                else:
+                    st.session_state.intentos -= 1
+                    st.error(mensaje)
+                    if st.session_state.intentos == 0:
+                        st.rerun()
+    else:
+        st.error("🚫 ACCESO BLOQUEADO. Has agotado tus 3 intentos.")
+
+# Pantalla de Menú y Navegación
+else:
+    # Barra lateral para el usuario
+    with st.sidebar:
+        st.write(f"👤 **Usuario:** {st.session_state.usuario}")
+        if st.button("Cerrar Sesión"):
+            st.session_state.logged_in = False
+            st.session_state.intentos = 3
+            st.session_state.pagina_actual = "menu"
+            st.rerun()
+
+    # Ruteador de vistas
+    if st.session_state.pagina_actual == "menu":
+        st.title("📱 Menú Principal")
+        st.write("Selecciona una herramienta para comenzar:")
+        
+        # Grid para las Cards
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            st.markdown("""
+            <div class="card-container">
+                <div class="card">
+                    <h3>🔢 Clasificador</h3>
+                    <p>Evalúa si un número es positivo, negativo, par o impar.</p>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+            if st.button("Abrir Clasificador", use_container_width=True):
+                st.session_state.pagina_actual = "clasificador"
+                st.rerun()
+
+        with col2:
+            st.markdown("""
+            <div class="card-container">
+                <div class="card">
+                    <h3>👤 Edad</h3>
+                    <p>Determina la etapa de vida y permisos de conducción.</p>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+            if st.button("Abrir Edades", use_container_width=True):
+                st.session_state.pagina_actual = "edad"
+                st.rerun()
+
+        with col3:
+            st.markdown("""
+            <div class="card-container">
+                <div class="card">
+                    <h3>💲 Tarifas</h3>
+                    <p>Calcula el precio final aplicando recargos y descuentos.</p>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+            if st.button("Abrir Tarifas", use_container_width=True):
+                st.session_state.pagina_actual = "tarifa"
+                st.rerun()
+
+    elif st.session_state.pagina_actual == "clasificador":
+        vista_clasificar_numero()
+    elif st.session_state.pagina_actual == "edad":
+        vista_categoria_edad()
+    elif st.session_state.pagina_actual == "tarifa":
+        vista_calcular_tarifa()
